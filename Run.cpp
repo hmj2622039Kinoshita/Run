@@ -8,7 +8,10 @@ const int FPS = 60; // フレームレート
 // ゲーム内で使用する変数、配列
 int imgClo, imgTre, imgSol; // 背景画像
 int imgPlayer[5]; // プレイヤ画像
+int timer;
 bool runState = true; // プレイヤが左右どちらにうごいているか　true = 右、false =　左
+
+struct OBJECT player; // プレイヤの構造体変数
 
 // グローバル関数
 int APIENTRY WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPSTR lpCmdLine, _In_ int nCmdShow)
@@ -20,8 +23,7 @@ int APIENTRY WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 	SetBackgroundColor(0, 0, 0); // 背景色の指定
 	SetDrawScreen(DX_SCREEN_BACK); // 描画面を裏背景にする
 
-	struct OBJECT player; // プレイヤの構造体変数
-
+	timer++;
 	InitGame(); // 初期化用関数
 	InitVariable(); // ゲーム開始時の位置
 
@@ -89,18 +91,39 @@ void ScrollBG(int spd)
 // ゲーム開始時の初期値を代入する関数
 void InitVariable(void)
 {
-	player.x = 256;
+	player.x = 576;
+	player.y = 320;
+	player.vx = 10;
 }
 
 // プレイヤの操作
 void MovePlayer(void)
 {
-	if (CheckHitKey(KEY_INPUT_D) && runState == true) // 右に走る
+	if (CheckHitKey(KEY_INPUT_D) && runState == true)
 	{
-		player.x 
+		runState = false;
 	}
-	if (CheckHitKey(KEY_INPUT_D) && runState == false) // 左に走る
+	if (CheckHitKey(KEY_INPUT_D) && runState == false)
 	{
+		runState = true;
+	}
 
+	if (runState == true) // 右に走る
+	{
+		player.x += player.vx;
+		DrawGraph(player.x, player.y, imgPlayer[timer % 3],true);
+		if (player.x > 1152)
+		{
+			player.x = 1152;
+		}
+	}
+	if (runState == false) // 左に走る
+	{
+		player.x -= player.vx;
+		DrawTurnGraph(player.x, player.y, imgPlayer[timer % 3],true);
+		if (player.x < 0)
+		{
+			player.x = 0;
+		}
 	}
 }
