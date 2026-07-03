@@ -9,7 +9,7 @@ const int FPS = 60; // フレームレート
 int imgClo, imgTre, imgSol; // 背景画像
 int imgPlayer[5]; // プレイヤ画像
 int timer;
-bool runState = true; // プレイヤが左右どちらにうごいているか　true = 右、false =　左
+
 
 struct OBJECT player; // プレイヤの構造体変数
 
@@ -23,12 +23,12 @@ int APIENTRY WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 	SetBackgroundColor(0, 0, 0); // 背景色の指定
 	SetDrawScreen(DX_SCREEN_BACK); // 描画面を裏背景にする
 
-	timer++;
 	InitGame(); // 初期化用関数
 	InitVariable(); // ゲーム開始時の位置
 
 	while (1) // メインループ
 	{
+		timer++;
 		ClearDrawScreen(); // 画面をクリアする
 
 		// ゲームの骨組みの処理
@@ -54,11 +54,10 @@ void InitGame(void)
 	imgTre = LoadGraph("Sprites/Backgrounds/tree.png"); // 背景中
 	imgSol  = LoadGraph("Sprites/Backgrounds/solid.png"); // 背景下
 	// プレイヤ画像  ここには初期化じゃなくて代入扱いになるから一個ずつするしかない
-	imgPlayer[0] = LoadGraph("Sprites/Characters/flont.png");
-	imgPlayer[1] = LoadGraph("Sprites/Characters/run1.png");
-	imgPlayer[2] = LoadGraph("Sprites/Characters/run2.png");
-	imgPlayer[3] = LoadGraph("Sprites/Characters/jump1.png");
-	imgPlayer[4] = LoadGraph("Sprites/Characters/jump2.png");	
+	imgPlayer[0] = LoadGraph("Sprites/Characters/run1.png");
+	imgPlayer[1] = LoadGraph("Sprites/Characters/run2.png");
+	imgPlayer[2] = LoadGraph("Sprites/Characters/jump1.png");
+	imgPlayer[3] = LoadGraph("Sprites/Characters/flont.png");
 }
 
 // 背景スクロール
@@ -67,24 +66,24 @@ void ScrollBG(int spd)
 	static int cloX, treX, solX; // スクロール位置を管理する変数
 	cloX = (cloX - spd) % 256; // 背景上
 		DrawGraph(cloX, 0, imgClo, false);
-		DrawGraph(cloX+ 256, 0, imgClo, false);
-		DrawGraph(cloX+ 512, 0, imgClo, false);
-		DrawGraph(cloX+ 768, 0, imgClo, false);
-		DrawGraph(cloX+ 1024, 0, imgClo, false);
-		DrawGraph(cloX+ 1280, 0, imgClo, false);
+		DrawGraph(cloX + 256, 0, imgClo, false);
+		DrawGraph(cloX + 512, 0, imgClo, false);
+		DrawGraph(cloX + 768, 0, imgClo, false);
+		DrawGraph(cloX + 1024, 0, imgClo, false);
+		DrawGraph(cloX + 1280, 0, imgClo, false);
 	treX = (treX - spd) % 256; // 背景中
 		DrawGraph(treX, 256, imgTre, false);
-		DrawGraph(treX+ 256, 256, imgTre, false);
-		DrawGraph(treX+ 512, 256, imgTre, false);
-		DrawGraph(treX+ 768, 256, imgTre, false);
-		DrawGraph(treX+ 1024, 256, imgTre, false);
-		DrawGraph(treX+ 1280, 256, imgTre, false);
+		DrawGraph(treX + 256, 256, imgTre, false);
+		DrawGraph(treX + 512, 256, imgTre, false);
+		DrawGraph(treX + 768, 256, imgTre, false);
+		DrawGraph(treX + 1024, 256, imgTre, false);
+		DrawGraph(treX + 1280, 256, imgTre, false);
 	solX = (solX - spd) % 256; // 背景下
 		DrawGraph(solX, 512, imgSol, false);
-		DrawGraph(solX+ 256, 512, imgSol, false);
-		DrawGraph(solX+ 512, 512, imgSol, false);
-		DrawGraph(solX+ 768, 512, imgSol, false);
-		DrawGraph(solX+ 1024, 512, imgSol, false);
+		DrawGraph(solX + 256, 512, imgSol, false);
+		DrawGraph(solX + 512, 512, imgSol, false);
+		DrawGraph(solX + 768, 512, imgSol, false);
+		DrawGraph(solX + 1024, 512, imgSol, false);
 		DrawGraph(solX + 1280, 512, imgSol, false);
 }
 
@@ -93,37 +92,30 @@ void InitVariable(void)
 {
 	player.x = 576;
 	player.y = 320;
-	player.vx = 10;
+	player.vx = 4;
+	player.vy = 3;
 }
 
 // プレイヤの操作
 void MovePlayer(void)
 {
-	if (CheckHitKey(KEY_INPUT_D) && runState == true)
-	{
-		runState = false;
-	}
-	if (CheckHitKey(KEY_INPUT_D) && runState == false)
-	{
-		runState = true;
-	}
-
-	if (runState == true) // 右に走る
-	{
-		player.x += player.vx;
-		DrawGraph(player.x, player.y, imgPlayer[timer % 3],true);
-		if (player.x > 1152)
-		{
-			player.x = 1152;
-		}
-	}
-	if (runState == false) // 左に走る
+	if (CheckHitKey(KEY_INPUT_D))
 	{
 		player.x -= player.vx;
-		DrawTurnGraph(player.x, player.y, imgPlayer[timer % 3],true);
-		if (player.x < 0)
+		DrawTurnGraph(player.x, player.y, imgPlayer[(timer / 8) % 2], true);
+		if (player.x < -18)
 		{
-			player.x = 0;
+			player.x = -18;
 		}
 	}
+	else
+	{
+		player.x += player.vx;
+		DrawGraph(player.x, player.y, imgPlayer[(timer / 8) % 2], true);
+		if (player.x > 1170)
+		{
+			player.x = 1170;
+		}
+	}
+
 }

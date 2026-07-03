@@ -8,8 +8,7 @@ struct OBJECT // プレイヤと敵用
 	int vx; // x軸方向の速さ
 	int vy; // y軸方向の速さ
 	int image; // 画像
-	int wid; // 画像の幅（ピクセル数）
-	int hei; // 画像の高さ
+	int jumpStatus; // ジャンプ状態
 };
 
 // 関数プロトタイプ宣言
