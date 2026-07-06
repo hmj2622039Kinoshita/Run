@@ -7,8 +7,10 @@ const int FPS = 60; // フレームレート
 
 // ゲーム内で使用する変数、配列
 int imgClo, imgTre, imgSol; // 背景画像
-int imgPlayer[5]; // プレイヤ画像
+int imgPlayer[4]; // プレイヤ画像
+int imgGra1, imgGra2, imgGra3, imgSoi1, imgSoi2, imgSoi3; // 草と土ブロック画像
 int timer;
+int ground = 600; // 仮地面
 
 
 struct OBJECT player; // プレイヤの構造体変数
@@ -26,6 +28,7 @@ int APIENTRY WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 	InitGame(); // 初期化用関数
 	InitVariable(); // ゲーム開始時の位置
 
+
 	while (1) // メインループ
 	{
 		timer++;
@@ -34,6 +37,10 @@ int APIENTRY WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 		// ゲームの骨組みの処理
 		ScrollBG(1); // 背景のスクロール
 		MovePlayer(); // プレイヤの操作
+		Gravity(); // 重力と仮当たり判定
+		Jump(); // ジャンプ
+
+
 
 		ScreenFlip(); // 裏画面の内容を表画面に反映させる
 		WaitTimer(1000 / FPS); // 一定時間待つ
@@ -52,12 +59,19 @@ void InitGame(void)
 	// 背景画像
 	imgClo = LoadGraph("Sprites/Backgrounds/cloud.png"); // 背景上
 	imgTre = LoadGraph("Sprites/Backgrounds/tree.png"); // 背景中
-	imgSol  = LoadGraph("Sprites/Backgrounds/solid.png"); // 背景下
+	imgSol = LoadGraph("Sprites/Backgrounds/solid.png"); // 背景下
 	// プレイヤ画像  ここには初期化じゃなくて代入扱いになるから一個ずつするしかない
 	imgPlayer[0] = LoadGraph("Sprites/Characters/run1.png");
 	imgPlayer[1] = LoadGraph("Sprites/Characters/run2.png");
 	imgPlayer[2] = LoadGraph("Sprites/Characters/jump1.png");
 	imgPlayer[3] = LoadGraph("Sprites/Characters/flont.png");
+	// 地面画像
+	imgGra1 = LoadGraph("Sprites/Tils/grassLeft.png");
+	imgGra2 = LoadGraph("Sprites/Tils/grass.png");
+	imgGra3 = LoadGraph("Sprites/Tils/grassRight.png");
+	imgSoi1 = LoadGraph("Sprites/Tils/soilLeft.png");
+	imgSoi2 = LoadGraph("Sprites/Tils/soil.png");
+	imgSoi3 = LoadGraph("Sprites/Tils/soilRight.png");
 }
 
 // 背景スクロール
@@ -71,14 +85,14 @@ void ScrollBG(int spd)
 		DrawGraph(cloX + 768, 0, imgClo, false);
 		DrawGraph(cloX + 1024, 0, imgClo, false);
 		DrawGraph(cloX + 1280, 0, imgClo, false);
-	treX = (treX - spd) % 256; // 背景中
+	//treX = (treX - spd) % 256; // 背景中
 		DrawGraph(treX, 256, imgTre, false);
 		DrawGraph(treX + 256, 256, imgTre, false);
 		DrawGraph(treX + 512, 256, imgTre, false);
 		DrawGraph(treX + 768, 256, imgTre, false);
 		DrawGraph(treX + 1024, 256, imgTre, false);
 		DrawGraph(treX + 1280, 256, imgTre, false);
-	solX = (solX - spd) % 256; // 背景下
+	//solX = (solX - spd) % 256; // 背景下
 		DrawGraph(solX, 512, imgSol, false);
 		DrawGraph(solX + 256, 512, imgSol, false);
 		DrawGraph(solX + 512, 512, imgSol, false);
@@ -90,16 +104,19 @@ void ScrollBG(int spd)
 // ゲーム開始時の初期値を代入する関数
 void InitVariable(void)
 {
-	player.x = 576;
-	player.y = 320;
-	player.vx = 4;
-	player.vy = 3;
+	player.x = 576.0f; // プレイヤのXの位置
+	player.y = 320.0f; // プレイヤのYの位置
+	player.vx = 4.0f; // 移動速度
+	player.vy = 0.0f; // y方向の速さ
+	player.jumpPower = 12.0f; // 初速度
+	player.gravity = 0.6f; // 重力（常にかかる）
+	player.jumpState = true;
 }
 
 // プレイヤの操作
 void MovePlayer(void)
 {
-	if (CheckHitKey(KEY_INPUT_D))
+	if (CheckHitKey(KEY_INPUT_D)) // Dキー押すと左に走る、離すと右に走る
 	{
 		player.x -= player.vx;
 		DrawTurnGraph(player.x, player.y, imgPlayer[(timer / 8) % 2], true);
@@ -117,5 +134,27 @@ void MovePlayer(void)
 			player.x = 1170;
 		}
 	}
+}
 
+// 重力処理と仮当たり判定
+void Gravity(void)
+{
+	player.vy += player.gravity;
+	player.y += player.vy;
+	if (player.y >= ground)
+	{
+		player.y = ground;
+		player.jumpState = false;
+	}
+}
+
+// ジャンプ
+void Jump(void)
+{
+	if (CheckHitKey(KEY_INPUT_SPACE) && player.jumpState == false)
+	{
+		player.vy = -player.jumpPower;
+		player.jumpState = true;
+
+	}
 }
