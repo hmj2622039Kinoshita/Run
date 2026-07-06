@@ -11,6 +11,8 @@ struct OBJECT // プレイヤと敵用
 	float gravity; // 重力（落下速度）
 	bool jumpState; // ジャンプ状態か否か
 };
+int chipX; // 画像に含まれるマップチップ数
+int chipY;
 
 // 関数プロトタイプ宣言
 void InitGame(void);
@@ -19,3 +21,4 @@ void MovePlayer(void);
 void InitVariable(void);
 void Gravity(void);
 void Jump(void);
+void DrawMapChip(void);
