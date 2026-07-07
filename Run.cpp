@@ -4,39 +4,32 @@
 // 定数定義
 const int WIDTH = 1280, HEIGHT = 768; // ウィンドウの幅と高さのピクセル数
 const int FPS = 60; // フレームレート
-const int chipWIDTH = 64, chipHEIGHT = 64; // マップチップの横幅と縦幅
-
+const int chipSize = 64; // マップチップのサイズ
+const int chipRow = 18; // マップチップ画像の一列に並んでる画像数
 
 // ゲーム内で使用する変数、配列
 int imgClo, imgTre, imgSol; // 背景画像
 int imgPlayer[4]; // プレイヤ画像
-// int imgGra1, imgGra2, imgGra3, imgSoi1, imgSoi2, imgSoi3; // 草と土ブロック画像
-int mapChipHandle; // マップチップ画像
-int timer;
+int timer; // タイマー
 int ground = 600; // 仮地面
-int mapWIDTH = WIDTH / chipWIDTH, mapHEIGHT = HEIGHT / chipHEIGHT; // マップの横幅と縦幅（チップ数）
-int mapChipList[20][12] // [20],[12]
+int chipImage; // マップチップ画像
+int pitch = 1; // マップチップ画像と画像の空白
+int step = chipSize + pitch; // 空白の影響を考慮するための変数
+int mapWIDTH = 20, mapHEIGHT = 12; // マップの横幅と縦幅（チップ数）
+int mapChipList[12][20] =
 {
-	{298,298,298,298,298,165,165,165,298,298,298,298},
-	{298,298,298,298,298,165,165,165,298,298,298,298},
-	{298,298,298,298,298,165,165,165,298,298,298,298},
-	{298,298,298,298,298,165,165,165,298,298,298,298},
-	{298,298,298,298,298,165,165,165,298,298,298,298},
-	{298,298,298,298,298,165,165,165,298,298,298,298},
-	{298,298,298,298,298,165,165,165,298,298,298,298},
-	{298,298,298,298,298,165,165,165,298,298,298,298},
-	{298,298,298,298,298,165,165,165,298,298,298,298},
-	{298,298,298,298,298,165,165,165,298,298,298,298},
-	{298,298,298,298,298,165,165,165,298,298,298,298},
-	{298,298,298,298,298,165,165,165,298,298,298,298},
-	{298,298,298,298,298,165,165,165,298,298,298,298},
-	{298,298,298,298,298,165,165,165,298,298,298,298},
-	{298,298,298,298,298,165,165,165,298,298,298,298},
-	{298,298,298,298,298,165,165,165,298,298,298,298},
-	{298,298,298,298,298,165,165,165,298,298,298,298},
-	{298,298,298,298,298,165,165,165,298,298,298,298},
-	{298,298,298,298,298,165,165,165,298,298,298,298},
-	{298,298,298,298,298,165,165,165,298,298,298,298},
+	{314,314,314,314,314,314,314,314,314,314,314,314,314,314,314,314,314,314,314,314},
+	{314,314,314,314,314,314,314,314,314,314,314,314,314,314,314,314,314,314,314,314},
+	{0,0,0,0,0,0,1,0,2,0,0,0,4,4,4,4,4,4,4,4},
+	{0,0,0,0,0,0,1,0,2,0,0,0,4,4,4,4,4,4,4,4},
+	{0,0,0,0,0,0,1,0,2,0,0,0,4,4,4,4,4,4,4,4},
+	{0,0,0,0,0,0,1,0,2,0,0,0,4,4,4,4,4,4,4,4},
+	{0,0,0,0,0,0,1,0,2,0,0,0,4,4,4,4,4,4,4,4},
+	{0,0,0,0,0,0,1,0,2,0,0,0,4,4,4,4,4,4,4,4},
+	{0,0,0,0,0,0,1,0,2,0,0,0,4,4,4,4,4,4,4,4},
+	{0,0,0,0,0,0,1,0,2,0,0,0,4,4,4,4,4,4,4,4},
+	{0,0,0,0,0,0,1,0,2,0,0,0,4,4,4,4,4,4,4,4},
+	{0,0,0,0,0,0,1,0,2,0,0,0,4,4,4,4,4,4,4,4},
 };
 
 struct OBJECT player; // プレイヤの構造体変数
@@ -55,8 +48,6 @@ int APIENTRY WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 	InitVariable(); // ゲーム開始時の位置
 
 
-
-
 	while (1) // メインループ
 	{
 		timer++;
@@ -64,10 +55,10 @@ int APIENTRY WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 
 		// ゲームの骨組みの処理
 		ScrollBG(1); // 背景のスクロール
-		MovePlayer(); // プレイヤの操作
-		Gravity(); // 重力と仮当たり判定
-		Jump(); // ジャンプ
 		DrawMapChip(); // マップチップ
+		Gravity(); // 重力と仮当たり判定
+		MovePlayer(); // プレイヤの操作
+		Jump(); // ジャンプ
 
 		ScreenFlip(); // 裏画面の内容を表画面に反映させる
 		WaitTimer(1000 / FPS); // 一定時間待つ
@@ -93,14 +84,7 @@ void InitGame(void)
 	imgPlayer[2] = LoadGraph("Sprites/Characters/jump1.png");
 	imgPlayer[3] = LoadGraph("Sprites/Characters/flont.png");
 	// マップチップ画像
-	mapChipHandle = LoadGraph("Sprites/Tiles/mapChip.png");
-	//// 地面画像
-	//imgGra1 = LoadGraph("Sprites/Tils/grassLeft.png");
-	//imgGra2 = LoadGraph("Sprites/Tils/grass.png");
-	//imgGra3 = LoadGraph("Sprites/Tils/grassRight.png");
-	//imgSoi1 = LoadGraph("Sprites/Tils/soilLeft.png");
-	//imgSoi2 = LoadGraph("Sprites/Tils/soil.png");
-	//imgSoi3 = LoadGraph("Sprites/Tils/soilRight.png");
+	chipImage = LoadGraph("Sprites/Tiles/mapChip.png");
 }
 
 // 背景スクロール
@@ -194,11 +178,11 @@ void DrawMapChip(void)
 	{
 		for (int j = 0; j < mapWIDTH; j++)
 		{
-			int num = mapChipList[i][j];
-			int sx = num * 64;
-			int dx = j * chipWIDTH;
-			int dy = i * chipHEIGHT;
-			DrawRectGraph(dx, dy, sx, 0, chipWIDTH, chipHEIGHT, mapChipHandle, true);
+			int id = mapChipList[i][j];
+			int sx = (id % chipRow) * step;
+			int sy = (id / chipRow) * step;
+
+			DrawRectGraph(j * chipSize, i * chipSize, sx, sy, chipSize, chipSize, chipImage, true);
 		}
 	}
 }
