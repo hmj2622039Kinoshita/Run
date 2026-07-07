@@ -4,14 +4,40 @@
 // 定数定義
 const int WIDTH = 1280, HEIGHT = 768; // ウィンドウの幅と高さのピクセル数
 const int FPS = 60; // フレームレート
-const int chipSize = 64; // マップチップの1つのサイズ
+const int chipWIDTH = 64, chipHEIGHT = 64; // マップチップの横幅と縦幅
+
 
 // ゲーム内で使用する変数、配列
 int imgClo, imgTre, imgSol; // 背景画像
 int imgPlayer[4]; // プレイヤ画像
-int imgGra1, imgGra2, imgGra3, imgSoi1, imgSoi2, imgSoi3; // 草と土ブロック画像
+// int imgGra1, imgGra2, imgGra3, imgSoi1, imgSoi2, imgSoi3; // 草と土ブロック画像
+int mapChipHandle; // マップチップ画像
 int timer;
 int ground = 600; // 仮地面
+int mapWIDTH = WIDTH / chipWIDTH, mapHEIGHT = HEIGHT / chipHEIGHT; // マップの横幅と縦幅（チップ数）
+int mapChipList[20][12] // [20],[12]
+{
+	{298,298,298,298,298,165,165,165,298,298,298,298},
+	{298,298,298,298,298,165,165,165,298,298,298,298},
+	{298,298,298,298,298,165,165,165,298,298,298,298},
+	{298,298,298,298,298,165,165,165,298,298,298,298},
+	{298,298,298,298,298,165,165,165,298,298,298,298},
+	{298,298,298,298,298,165,165,165,298,298,298,298},
+	{298,298,298,298,298,165,165,165,298,298,298,298},
+	{298,298,298,298,298,165,165,165,298,298,298,298},
+	{298,298,298,298,298,165,165,165,298,298,298,298},
+	{298,298,298,298,298,165,165,165,298,298,298,298},
+	{298,298,298,298,298,165,165,165,298,298,298,298},
+	{298,298,298,298,298,165,165,165,298,298,298,298},
+	{298,298,298,298,298,165,165,165,298,298,298,298},
+	{298,298,298,298,298,165,165,165,298,298,298,298},
+	{298,298,298,298,298,165,165,165,298,298,298,298},
+	{298,298,298,298,298,165,165,165,298,298,298,298},
+	{298,298,298,298,298,165,165,165,298,298,298,298},
+	{298,298,298,298,298,165,165,165,298,298,298,298},
+	{298,298,298,298,298,165,165,165,298,298,298,298},
+	{298,298,298,298,298,165,165,165,298,298,298,298},
+};
 
 struct OBJECT player; // プレイヤの構造体変数
 
@@ -41,7 +67,7 @@ int APIENTRY WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 		MovePlayer(); // プレイヤの操作
 		Gravity(); // 重力と仮当たり判定
 		Jump(); // ジャンプ
-
+		DrawMapChip(); // マップチップ
 
 		ScreenFlip(); // 裏画面の内容を表画面に反映させる
 		WaitTimer(1000 / FPS); // 一定時間待つ
@@ -66,13 +92,15 @@ void InitGame(void)
 	imgPlayer[1] = LoadGraph("Sprites/Characters/run2.png");
 	imgPlayer[2] = LoadGraph("Sprites/Characters/jump1.png");
 	imgPlayer[3] = LoadGraph("Sprites/Characters/flont.png");
-	// 地面画像
-	imgGra1 = LoadGraph("Sprites/Tils/grassLeft.png");
-	imgGra2 = LoadGraph("Sprites/Tils/grass.png");
-	imgGra3 = LoadGraph("Sprites/Tils/grassRight.png");
-	imgSoi1 = LoadGraph("Sprites/Tils/soilLeft.png");
-	imgSoi2 = LoadGraph("Sprites/Tils/soil.png");
-	imgSoi3 = LoadGraph("Sprites/Tils/soilRight.png");
+	// マップチップ画像
+	mapChipHandle = LoadGraph("Sprites/Tiles/mapChip.png");
+	//// 地面画像
+	//imgGra1 = LoadGraph("Sprites/Tils/grassLeft.png");
+	//imgGra2 = LoadGraph("Sprites/Tils/grass.png");
+	//imgGra3 = LoadGraph("Sprites/Tils/grassRight.png");
+	//imgSoi1 = LoadGraph("Sprites/Tils/soilLeft.png");
+	//imgSoi2 = LoadGraph("Sprites/Tils/soil.png");
+	//imgSoi3 = LoadGraph("Sprites/Tils/soilRight.png");
 }
 
 // 背景スクロール
@@ -137,7 +165,7 @@ void MovePlayer(void)
 	}
 }
 
-// 重力処理と仮当たり判定
+// 重力と仮当たり判定
 void Gravity(void)
 {
 	player.vy += player.gravity;
@@ -156,5 +184,21 @@ void Jump(void)
 	{
 		player.vy = -player.jumpPower;
 		player.jumpState = true;
+	}
+}
+
+// マップチップ
+void DrawMapChip(void)
+{
+	for (int i = 0; i < mapHEIGHT; i++)
+	{
+		for (int j = 0; j < mapWIDTH; j++)
+		{
+			int num = mapChipList[i][j];
+			int sx = num * 64;
+			int dx = j * chipWIDTH;
+			int dy = i * chipHEIGHT;
+			DrawRectGraph(dx, dy, sx, 0, chipWIDTH, chipHEIGHT, mapChipHandle, true);
+		}
 	}
 }
