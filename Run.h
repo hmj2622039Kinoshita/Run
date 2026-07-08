@@ -10,7 +10,7 @@ struct OBJECT // プレイヤと敵用
 	float speed; // 走るスピード
 	float jumpPower; // ジャンプ力
 	float gravity; // 重力（落下速度）
-	int size; // プレイヤのサイズ
+	int size; // プレイヤのXサイズ
 	bool jumpState; // ジャンプ状態か否か
 };
 
@@ -23,4 +23,5 @@ void MovePlayer(void);
 void InitVariable(void);
 void Gravity(void);
 void DrawMapChip(void);
-void Collision(void);
+void CollisionX(void);
+void CollisionY(void);
