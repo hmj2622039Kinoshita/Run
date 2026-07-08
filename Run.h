@@ -7,10 +7,13 @@ struct OBJECT // プレイヤと敵用
 	float y; // y座標
 	float vx; // x軸方向の速さ
 	float vy; // y軸方向の速さ
+	float speed; // 走るスピード
 	float jumpPower; // ジャンプ力
 	float gravity; // 重力（落下速度）
+	int size; // プレイヤのサイズ
 	bool jumpState; // ジャンプ状態か否か
 };
+
 
 
 // 関数プロトタイプ宣言
@@ -19,5 +22,5 @@ void ScrollBG(int spd);
 void MovePlayer(void);
 void InitVariable(void);
 void Gravity(void);
-void Jump(void);
 void DrawMapChip(void);
+void Collision(void);
