@@ -8,14 +8,18 @@ const int chipSize = 64; // マップチップのサイズ
 const int chipRow = 18; // マップチップ画像の一列に並んでる画像数
 
 // ゲーム内で使用する変数、配列
+int timer = 0; // タイマー
+int scene = TITLE;
 int imgClo, imgTre, imgSol; // 背景画像
 int imgPlayer[4]; // プレイヤ画像
-int timer; // タイマー
 int chipImage; // マップチップ画像
 int pitch = 1; // マップチップ画像と画像の空白
 int step = chipSize + pitch; // 空白の影響を考慮するための変数
 int mapWIDTH = 20, mapHEIGHT = 12; // マップの横幅と縦幅（チップ数）
-enum Chip{RI=314,JL=173,JM,JN}; // chipmapの横縦
+
+enum{TITLE,PLAY1,PLAY2,PLAY3,CLEAR,OVER}; // シーン
+enum Chip { BL = 29, DH = 61, GG = 114, GH, GQ = 124, JF = 167, JL, JM, JN, RI = 314 }; // mapchipの横縦
+
 int mapChipList[12][20] =
 {
 	{RI,RI,RI,RI,RI,RI,RI,RI,RI,RI,RI,RI,RI,RI,RI,RI,RI,RI,RI,RI},
@@ -27,8 +31,8 @@ int mapChipList[12][20] =
 	{RI,RI,RI,RI,RI,RI,RI,RI,RI,RI,RI,RI,RI,RI,RI,RI,RI,RI,RI,RI},
 	{RI,RI,RI,RI,RI,RI,RI,RI,RI,RI,RI,RI,RI,RI,RI,RI,RI,RI,RI,RI},
 	{RI,RI,RI,RI,RI,RI,RI,RI,RI,RI,RI,RI,RI,RI,JL,JL,JL,RI,RI,RI},
-	{RI,RI,RI,RI,RI,JL,JL,RI,RI,RI,RI,RI,RI,RI,RI,RI,RI,RI,RI,RI},
-	{RI,RI,RI,RI,RI,RI,RI,RI,RI,RI,RI,RI,RI,RI,RI,RI,RI,RI,RI,RI},
+	{RI,RI,RI,RI,RI,JL,JL,RI,RI,RI,JL,RI,RI,RI,RI,RI,RI,RI,RI,RI},
+	{RI,RI,RI,RI,RI,RI,RI,RI,RI,JL,JL,RI,RI,RI,RI,RI,RI,RI,RI,RI},
 	{JM,JL,JL,JL,JL,JL,JL,JL,JL,JL,JL,JL,JL,JL,JL,JL,JL,JL,JL,JN}
 };
 
@@ -53,12 +57,29 @@ int APIENTRY WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 		timer++;
 		ClearDrawScreen(); // 画面をクリアする
 
-		// ゲームの骨組みの処理
-		ScrollBG(1); // 背景のスクロール
-		DrawMapChip(); // マップチップ
-		Gravity(); // 重力と仮当たり判定
-		MovePlayer(); // プレイヤの操作
-		//Collision(); // マップチップとの当たり判定
+		switch (scene) // タイトル画面
+		{
+		case TITLE:
+			ScrollBG(0);
+			Title();
+			break;
+
+		case PLAY1:
+			ScrollBG(1); // 背景のスクロール
+			DrawMapChip(); // マップチップ
+			MovePlayer(); // プレイヤの操作
+			Gravity(); // 重力
+			break;
+
+		case CLEAR:
+			Result();
+			break;
+
+		case OVER:
+			Result();
+			break;
+
+		}
 
 		ScreenFlip(); // 裏画面の内容を表画面に反映させる
 		WaitTimer(1000 / FPS); // 一定時間待つ
@@ -97,8 +118,9 @@ void InitVariable(void)
 	player.speed = 4.0f; // 移動速度（走る）
 	player.jumpPower = 15.0f; // 初速度
 	player.gravity = 0.6f; // 重力（常にかかる）
-	player.size = 128; // プレイヤのサイズ
-	player.jumpState = true; // 仮 ジャンプできる状態か
+	player.sizeX = 64; // プレイヤのXサイズ
+	player.sizeY = 128; // プレイヤのYサイズ
+	player.jumpState = true; // ジャンプできる状態か
 }
 
 // 背景スクロール
@@ -136,30 +158,30 @@ void MovePlayer(void)
 	if (CheckHitKey(KEY_INPUT_SPACE) && player.jumpState == false) // スペースキーが押されたらy方向に力を加える
 	{
 		player.vy = -player.jumpPower;
-		player.jumpState = true;
+		player.jumpState = true; // ジャンプできない状態
 	}
 	if (player.jumpState == false) // 走ってる状態
 	{
-		if(player.vx > 0) { DrawGraph(player.x, player.y, imgPlayer[(timer / 8) % 2], true); }
-		else { DrawTurnGraph(player.x, player.y, imgPlayer[(timer / 8) % 2], true); }
+		if(player.vx > 0) { DrawGraph(player.x, player.y, imgPlayer[(timer / 8) % 2], true); } // 右向きの画像
+		else { DrawTurnGraph(player.x, player.y, imgPlayer[(timer / 8) % 2], true); } // 左向き画像
 	}
 	else // ジャンプ状態
 	{
-		if(player.vx > 0) { DrawGraph(player.x, player.y, imgPlayer[2], true); }
-		else { DrawTurnGraph(player.x, player.y, imgPlayer[2], true); }
+		if(player.vx > 0) { DrawGraph(player.x, player.y, imgPlayer[2], true); } // 右向き
+		else { DrawTurnGraph(player.x, player.y, imgPlayer[2], true); } // 左向き
 	}
 	player.x += player.vx;
-	CollisionX();
+	CollisionX(); // 左右方向の当たり判定
 	if (player.x < -18) {player.x = -18;}
 	if (player.x > 1170) {player.x = 1170;}
 }
 
-// 重力と仮当たり判定
+// 重力
 void Gravity(void)
 {
 	player.vy += player.gravity; // 常に重力がかかる(速さに)
 	player.y += player.vy;
-	CollisionY();
+	CollisionY(); // 上下方向の当たり判定
 }
 
 // マップチップとプレイヤのX軸方向の当たり判定
@@ -171,23 +193,24 @@ void CollisionX(void)
 		{
 			if (mapChipList[i][j] == RI) continue; // 空白の時当たり判定無し
 
-			int playerCenterX = player.x + player.size / 2; // プレイヤの中心X座標
-			int playerCenterY = player.y + player.size / 2; // プレイヤの中心Y座標
+			int playerCenterX = player.x + player.sizeX / 2; // プレイヤの中心X座標
+			int playerCenterY = player.y + player.sizeY / 2; // プレイヤの中心Y座標
 			int chipCenterX = j * chipSize + chipSize / 2; // チップの中心X座標
 			int chipCenterY = i * chipSize + chipSize / 2; // チップの中心Y座標
 			int dx = abs(playerCenterX - chipCenterX); // x座標の中心間距離
 			int dy = abs(playerCenterY - chipCenterY); // y座標の中心間距離
 
-			if (dx < (player.size + chipSize) / 2 && dy < (player.size + chipSize) / 2) // x,yの中心間距離がプレイヤとchipのx,yの長さを足した分より小さいとき
+			if (dx < (player.sizeX + chipSize) / 2 && dy < (player.sizeY + chipSize) / 2) // x,yの中心間距離がプレイヤとchipのx,yの長さの半分より小さいとき
 			{
-				int x = (player.size + chipSize) / 2 - dx;
-				if (player.vx > 0) { player.x -= x; }
-				else if (player.vx < 0) { player.x += x; }
-				player.vx = 0;
+				int x = (player.sizeX + chipSize) / 2 - dx; // x方向に重なっている長さ
+				if (player.vx > 0) { player.x -= x; } // プレイヤが左側
+				else if (player.vx < 0) { player.x += x; } // プレイヤが右側
+				player.vx = 0; // 衝突したら進む量０にする
 			}
 		}
 	}
 }
+
 // マップチップとプレイヤのY軸方向の当たり判定
 void CollisionY(void)
 {
@@ -195,24 +218,24 @@ void CollisionY(void)
 	{
 		for (int j = 0; j < mapWIDTH; j++)
 		{
-			if (mapChipList[i][j] == RI) continue; // 空白の時当たり判定無し
+			if (mapChipList[i][j] == RI) continue;
 
-			int playerCenterX = player.x + player.size / 2; // プレイヤの中心X座標
-			int playerCenterY = player.y + player.size / 2; // プレイヤの中心Y座標
-			int chipCenterX = j * chipSize + chipSize / 2; // チップの中心X座標
-			int chipCenterY = i * chipSize + chipSize / 2; // チップの中心Y座標
-			int dx = abs(playerCenterX - chipCenterX); // x座標の中心間距離
-			int dy = abs(playerCenterY - chipCenterY); // y座標の中心間距離
+			int playerCenterX = player.x + player.sizeX / 2;
+			int playerCenterY = player.y + player.sizeY / 2; 
+			int chipCenterX = j * chipSize + chipSize / 2; 
+			int chipCenterY = i * chipSize + chipSize / 2;
+			int dx = abs(playerCenterX - chipCenterX);
+			int dy = abs(playerCenterY - chipCenterY);
 
-			if (dx < (player.size + chipSize) / 2 && dy < (player.size + chipSize) / 2) // x,yの中心間距離がプレイヤとchipのx,yの長さを足した分より小さいとき
+			if (dx < (player.sizeX + chipSize) / 2 && dy < (player.sizeY + chipSize) / 2)
 			{
-				int y = (player.size + chipSize) / 2 - dy;
-				if (player.vy > 0) 
+				int y = (player.sizeY + chipSize) / 2 - dy; // y方向に重なっている長さ
+				if (player.vy > 0) // 落下しているとき
 				{
 					player.y -= y;
-					player.jumpState = false;
+					player.jumpState = false; // ジャンプできない状態
 				}
-				else if (player.vy < 0) { player.y += y; }
+				else if (player.vy < 0) { player.y += y; } // 下から上に移動してるとき
 				player.vy = 0;
 			}
 		}
@@ -233,4 +256,33 @@ void DrawMapChip(void)
 			DrawRectGraph(j * chipSize, i * chipSize, sx, sy, chipSize, chipSize, chipImage, true);
 		}
 	}
+}
+
+// タイトル
+void Title(void)
+{
+	if (CheckHitKey(KEY_INPUT_1))
+	{
+		scene = PLAY1;
+	}
+	if (CheckHitKey(KEY_INPUT_2))
+	{
+		scene = PLAY2;
+	}
+	if (CheckHitKey(KEY_INPUT_3))
+	{
+		scene = PLAY3;
+	}
+}
+
+// PLAY画面
+void Play(void)
+{
+
+}
+
+// RESULT画面
+void Result(void)
+{
+
 }
