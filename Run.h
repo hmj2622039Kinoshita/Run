@@ -18,7 +18,7 @@ struct OBJECT // プレイヤと敵用
 
 // 関数プロトタイプ宣言
 void InitGame(void);
-void ScrollBG(int spd);
+void ScrollBG(int spd1,int spd2,int spd3);
 void MovePlayer(void);
 void InitVariable(void);
 void Gravity(void);
@@ -27,4 +27,5 @@ void CollisionX(void);
 void CollisionY(void);
 void Title(void);
 void Play(void);
-void Result(void);
+void Clear(void);
+void Over(void);
