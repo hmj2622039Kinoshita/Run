@@ -118,8 +118,8 @@ void InitGame(void)
 void InitVariable(void)
 {
 	// プレイヤ構造体
-	player.x = 576.0f; // プレイヤのXの位置
-	player.y = 320.0f; // プレイヤのYの位置
+	player.x = 576.0f; // プレイヤのXの中心座標
+	player.y = 320.0f; // プレイヤのYの中心座標
 	player.vx = 0.0f; // x方向の速さ
 	player.vy = 0.0f; // y方向の速さ
 	player.speed = 4.0f; // 移動速度（走る）
@@ -169,13 +169,13 @@ void MovePlayer(void)
 	}
 	if (player.jumpState == false) // 走ってる状態
 	{ // DrawRotaGraph→0.75倍、最後のtrue = 左右反転
-		if (player.vx > 0) { DrawRotaGraph(player.x + player.sizeX / 2, player.y + player.sizeY / 2, 0.75, 0 , imgPlayer[(timer / 8) % 2], false,false); } // 右向きの画像
-		else { DrawRotaGraph(player.x + player.sizeX / 2, player.y + player.sizeY / 2, 0.75, 0, imgPlayer[(timer / 8) % 2], false,true); } // 左向き画像
+		if (player.vx > 0) { DrawRotaGraph(player.x, player.y, 0.75, 0 , imgPlayer[(timer / 8) % 2], false,false); } // 右向きの画像
+		else { DrawRotaGraph(player.x, player.y, 0.75, 0, imgPlayer[(timer / 8) % 2], false,true); } // 左向き画像
 	}
 	else // ジャンプ状態
 	{
-		if (player.vx > 0) { DrawRotaGraph(player.x + player.sizeX / 2, player.y + player.sizeY / 2, 0.75, 0, imgPlayer[2], false, false); } // 右向き
-		else { DrawRotaGraph(player.x + player.sizeX / 2, player.y + player.sizeY / 2, 0.75, 0, imgPlayer[2], false, true); } // 左向き
+		if (player.vx > 0) { DrawRotaGraph(player.x, player.y, 0.75, 0, imgPlayer[2], false, false); } // 右向き
+		else { DrawRotaGraph(player.x, player.y, 0.75, 0, imgPlayer[2], false, true); } // 左向き
 	}
 	player.x += player.vx;
 	CollisionX(); // 左右方向の当たり判定
@@ -200,16 +200,18 @@ void CollisionX(void)
 		{
 			if (mapChipList[i][j] == RI || mapChipList[i][j] == DH || mapChipList[i][j] == GQ || mapChipList[i][j] == GG || mapChipList[i][j] == GH) continue; // 当たり判定無し
 
-			int playerCenterX = player.x + player.sizeX / 2; // プレイヤの中心X座標
-			int playerCenterY = player.y + player.sizeY / 2; // プレイヤの中心Y座標
+			int playerCenterX = player.x; // プレイヤの中心X座標
+			int playerCenterY = player.y; // プレイヤの中心Y座標
 			int chipCenterX = j * chipSize + chipSize / 2; // チップの中心X座標
 			int chipCenterY = i * chipSize + chipSize / 2; // チップの中心Y座標
 			int dx = abs(playerCenterX - chipCenterX); // x座標の中心間距離
 			int dy = abs(playerCenterY - chipCenterY); // y座標の中心間距離
+			int hitSizeX = player.sizeX * 0.75/ 2;
+			int hitSizeY = player.sizeY * 3 / 4;
 
-			if (dx < (player.sizeX + chipSize) / 2 && dy < (player.sizeY + chipSize) / 2) // x,yの中心間距離がプレイヤとchipのx,yの長さの半分より小さいとき
+			if (dx < (hitSizeX + chipSize) / 2 && dy < (hitSizeY + chipSize) / 2) // x,yの中心間距離がプレイヤとchipのx,yの長さの半分より小さいとき
 			{
-				int x = (player.sizeX + chipSize) / 2 - dx; // x方向に重なっている長さ
+				int x = (hitSizeX + chipSize) / 2 - dx; // x方向に重なっている長さ
 				if (player.vx > 0) { player.x -= x; } // プレイヤが左側
 				else if (player.vx < 0) { player.x += x; } // プレイヤが右側
 				player.vx = 0; // 衝突したら進む量０にする
@@ -227,8 +229,8 @@ void CollisionY(void)
 		{
 			if (mapChipList[i][j] == RI || mapChipList[i][j] == DH || mapChipList[i][j] == GQ || mapChipList[i][j] == GG || mapChipList[i][j] == GH) continue;
 
-			int playerCenterX = player.x + player.sizeX / 2;
-			int playerCenterY = player.y + player.sizeY / 2; 
+			int playerCenterX = player.x;
+			int playerCenterY = player.y; 
 			int chipCenterX = j * chipSize + chipSize / 2; 
 			int chipCenterY = i * chipSize + chipSize / 2;
 			int dx = abs(playerCenterX - chipCenterX);
@@ -297,6 +299,7 @@ void Play(void)
 	}
 	if (CheckHitKey(KEY_INPUT_Q)) // 仮　シーン遷移
 	{
+		timer = 0; // できればPLAY画面のシーン遷移のとこに入れる
 		scene = OVER;
 	}
 }
@@ -315,7 +318,7 @@ void Clear(void)
 		DrawGraph(x, HEIGHT - chipSize * 2, imgGra, true); // 草ブロック
 		DrawGraph(x, HEIGHT - chipSize, imgTer, true); // 土ブロック
 	}
-	px += player.speed;
+	px += player.speed + 3 ;
 	if ( px < WIDTH + 10)
 	{
 		DrawGraph(px, 515, imgPlayer[(timer / 8) % 2], true);
@@ -330,9 +333,8 @@ void Clear(void)
 // OVER画面
 void Over(void)
 {
-	timer = 0; // できればPLAY画面のシーン遷移のとこに入れる
 	SetFontSize(200);
 	DrawString(182, 180, "GAME OVER", 0xff0000);
 	DrawRotaGraph(WIDTH / 2, HEIGHT / 3 * 2, 1.3 , 0, imgDie, true);
-	if (timer == 2) { scene = TITLE; } // タイトルへシーン遷移
+	if (timer == 120 ) { scene = TITLE; } // タイトルへシーン遷移
 }
