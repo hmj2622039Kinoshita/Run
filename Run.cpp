@@ -179,8 +179,8 @@ void MovePlayer(void)
 	}
 	player.x += player.vx;
 	CollisionX(); // 左右方向の当たり判定
-	if (player.x < -18) {player.x = -18;}  // ココ調整する！！！
-	if (player.x > 1170) {player.x = 1170;}
+	if (player.x < 32) {player.x = 32;}
+	if (player.x > 1248) {player.x = 1248;}
 }
 
 // 重力
