@@ -16,7 +16,7 @@ struct ITEM keyDoor;
 struct ITEM fakeDoor;
 
 enum{TITLE,PLAY1,PLAY2,CLEAR,OVER}; // シーン
-enum Chip { AQ = 16, BJ = 27, BK, BF = 41, BG,BH,BI, DH = 61, GG = 114, GH,GL = 119, GQ = 124, HA = 126, HN = 139, HO, HP, HQ, HR, IA, IB, IC, ID,IJ=153,IK,IN=157,JB = 163,JC,JD, JF = 167, JG, JH, JI, JJ, JK, JL, JM, JN, KB = 181, KC, KF = 185, KL = 191, KM, KN, RI = 314 }; // mapchipの横縦
+enum Chip { AQ = 16, BJ = 27, BK, BF = 41, BG,BH,BI, DH = 61, GG = 114, GH,GL = 119, GQ = 124, HA = 126, HN = 139, HO, HP, HQ, HR, IA, IB, IC, ID,IJ=153,IK,In = 157,JB = 163,JC,JD, JF = 167, JG, JH, JI, JJ, JK, JL, JM, JN, KB = 181, KC, KF = 185, KL = 191, KM, KN, RI = 314 }; // mapchipの横縦
 
 // ゲーム内で使用する変数、配列
 int timer = 0; // タイマー
@@ -56,16 +56,17 @@ int mapChipList2[12][20] =
 	{BH,BK,RI,RI,BK,RI,RI,BH,BK,RI,RI,RI,RI,BH,JB,RI,RI,RI,RI,BH},
 	{AQ,RI,RI,RI,RI,RI,RI,IJ,BK,RI,AQ,RI,RI,AQ,RI,RI,RI,RI,RI,BK},
 	{RI,RI,IC,ID,RI,RI,RI,RI,RI,RI,GG,RI,RI,RI,RI,RI,RI,BK,RI,RI},
-	{BG,RI,HR,IA,RI,AQ,RI,RI,RI,IJ,IN,RI,RI,RI,RI,AQ,RI,RI,RI,RI},
+	{RI,RI,HR,IA,RI,AQ,RI,RI,RI,IJ,In,RI,RI,RI,RI,AQ,RI,RI,RI,RI},
 	{BK,RI,HO,IA,RI,RI,RI,RI,RI,RI,RI,RI,RI,RI,RI,RI,RI,RI,RI,RI},
 	{RI,RI,RI,JB,AQ,AQ,RI,RI,RI,RI,RI,RI,BK,RI,RI,RI,RI,RI,RI,RI},
 	{GG,RI,RI,RI,RI,RI,RI,RI,RI,RI,RI,RI,RI,RI,RI,BK,RI,RI,RI,RI},
-	{IJ,IK,IN,RI,RI,RI,RI,AQ,RI,RI,RI,IJ,IN,RI,RI,BK,RI,RI,GG,RI},
-	{RI,BI,RI,RI,RI,RI,AQ,RI,RI,RI,RI,RI,RI,RI,RI,BK,RI,RI,IJ,IN},
+	{IJ,IK,In,RI,RI,RI,RI,AQ,RI,RI,RI,IJ,In,RI,RI,BK,RI,RI,GG,RI},
+	{RI,BI,RI,RI,RI,RI,AQ,RI,RI,RI,RI,RI,RI,RI,RI,BK,RI,RI,IJ,In},
 	{RI,BH,GL,RI,GQ,RI,RI,RI,RI,RI,RI,RI,RI,RI,GL,RI,RI,RI,RI,RI},
 	{JM,JL,JL,JL,JL,JL,JL,JL,JL,JL,JL,JL,JL,JL,JL,JL,JL,JL,JL,JN}
 };
 
+bool keyState = false;
 
 // グローバル関数
 int APIENTRY WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPSTR lpCmdLine, _In_ int nCmdShow)
@@ -438,7 +439,6 @@ void Gimmick1(void)
 		scene = OVER;
 	}
 	// 鍵
-	bool keyState = false;
 	if (keyState == false)
 	{
 		DrawRotaGraph(key.x, key.y, 0.9, 2, imgKey, true);
@@ -459,6 +459,8 @@ void Gimmick1(void)
 		player.vx = 0;
 		player.vy = 0;
 		scene = PLAY2;
+		player.x = 96;
+		player.x = 672;
 		// if(timer == 10) { scene = PLAY2; }
 	}
 	// 偽ドア
@@ -471,6 +473,7 @@ void Gimmick1(void)
 
 void Gimmick2(void)
 {
+	//ぐるとげとげ
 
 }
 				
