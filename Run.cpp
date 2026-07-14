@@ -7,8 +7,16 @@ const int FPS = 60; // フレームレート
 const int chipSize = 64; // マップチップのサイズ
 const int chipRow = 18; // マップチップ画像の一列に並んでる画像数
 
+struct OBJECT player; // プレイヤの構造体変数
+struct ITEM spiky1; // とげのギミック
+struct ITEM spiky2;
+struct ITEM spiky3;
+struct ITEM key;
+struct ITEM keyDoor;
+struct ITEM fakeDoor;
+
 enum{TITLE,PLAY1,PLAY2,CLEAR,OVER}; // シーン
-enum Chip { AQ = 16, BJ = 27, BK, BF = 41, BG, DH = 61, GG = 114, GH, GQ = 124, HA = 126, HN = 139, HO, HP, HQ, HR, IA, IB, IC, ID, JF = 167, JG, JH, JI, JJ, JK, JL, JM, JN, KB = 181, KC, KF = 185, KL = 191, KM, KN, RI = 314 }; // mapchipの横縦
+enum Chip { AQ = 16, BJ = 27, BK, BF = 41, BG,BH,BI, DH = 61, GG = 114, GH,GL = 119, GQ = 124, HA = 126, HN = 139, HO, HP, HQ, HR, IA, IB, IC, ID,IJ=153,IK,IN=157,JB = 163,JC,JD, JF = 167, JG, JH, JI, JJ, JK, JL, JM, JN, KB = 181, KC, KF = 185, KL = 191, KM, KN, RI = 314 }; // mapchipの横縦
 
 // ゲーム内で使用する変数、配列
 int timer = 0; // タイマー
@@ -17,9 +25,12 @@ int imgClo, imgTre, imgSol; // 背景画像
 int imgPlayer[3]; // プレイヤ画像
 int imgGra, imgTer; // タイトル用地面画像
 int imgDie; // ゲームオーバー画面用プレイヤ画像
-int chipImage; // マップチップ画像
-int playerCenterX = player.x; // プレイヤの中心X座標
-int playerCenterY = player.y + 6;// プレイヤの中心Y座標
+int imgKey; // 鍵の画像
+int imgDoor1; // ドア画像
+int imgDoor2; // ドア画像
+int imgFakeDoor1; // 偽ドア画像
+int imgFakeDoor2; // 偽ドア画像
+int imgChip; // マップチップ画像
 int px = -2; // Clearシーンのプレイヤのx座標
 int pitch = 1; // マップチップ画像と画像の空白
 int step = chipSize + pitch; // 空白の影響を考慮するための変数
@@ -34,20 +45,27 @@ int mapChipList1[12][20] =
 	{JN,RI,RI,KL,HA,AQ,KL,RI,RI,RI,RI,RI,RI,BJ,RI,RI,RI,RI,RI,RI},
 	{JH,BJ,RI,RI,BJ,RI,RI,RI,BJ,RI,RI,RI,RI,RI,RI,RI,RI,RI,RI,BJ},
 	{RI,RI,RI,RI,BJ,RI,RI,RI,GG,RI,RI,RI,RI,BJ,BJ,RI,RI,GH,RI,RI},
-	{RI,RI,HA,RI,BJ,RI,RI,KB,KF,RI,RI,RI,RI,RI,RI,RI,KB,KF,RI,RI},
+	{RI,RI,RI,HA,BJ,RI,RI,KB,KF,RI,RI,RI,RI,RI,RI,RI,KB,KF,RI,RI},
 	{RI,KB,KC,KF,BJ,RI,RI,RI,RI,RI,RI,KB,KF,RI,RI,RI,RI,RI,RI,RI},
 	{RI,RI,DH,RI,RI,GQ,RI,RI,RI,RI,RI,GH,RI,RI,RI,DH,RI,RI,RI,RI},
 	{JM,JL,JL,JL,JL,JL,JL,JL,JL,JL,JL,JL,JL,JL,JL,JL,JL,JL,JL,JN}
 };
 int mapChipList2[12][20] =
 {
-
+	{BI,RI,RI,RI,BK,RI,RI,BI,BK,RI,RI,RI,RI,BI,JC,RI,RI,RI,RI,BI},
+	{BH,BK,RI,RI,BK,RI,RI,BH,BK,RI,RI,RI,RI,BH,JB,RI,RI,RI,RI,BH},
+	{AQ,RI,RI,RI,RI,RI,RI,IJ,BK,RI,AQ,RI,RI,AQ,RI,RI,RI,RI,RI,BK},
+	{RI,RI,IC,ID,RI,RI,RI,RI,RI,RI,GG,RI,RI,RI,RI,RI,RI,BK,RI,RI},
+	{BG,RI,HR,IA,RI,AQ,RI,RI,RI,IJ,IN,RI,RI,RI,RI,AQ,RI,RI,RI,RI},
+	{BK,RI,HO,IA,RI,RI,RI,RI,RI,RI,RI,RI,RI,RI,RI,RI,RI,RI,RI,RI},
+	{RI,RI,RI,JB,AQ,AQ,RI,RI,RI,RI,RI,RI,BK,RI,RI,RI,RI,RI,RI,RI},
+	{GG,RI,RI,RI,RI,RI,RI,RI,RI,RI,RI,RI,RI,RI,RI,BK,RI,RI,RI,RI},
+	{IJ,IK,IN,RI,RI,RI,RI,AQ,RI,RI,RI,IJ,IN,RI,RI,BK,RI,RI,GG,RI},
+	{RI,BI,RI,RI,RI,RI,AQ,RI,RI,RI,RI,RI,RI,RI,RI,BK,RI,RI,IJ,IN},
+	{RI,BH,GL,RI,GQ,RI,RI,RI,RI,RI,RI,RI,RI,RI,GL,RI,RI,RI,RI,RI},
+	{JM,JL,JL,JL,JL,JL,JL,JL,JL,JL,JL,JL,JL,JL,JL,JL,JL,JL,JL,JN}
 };
 
-struct OBJECT player; // プレイヤの構造体変数
-struct ITEM spiky1; // とげのギミック
-struct ITEM spiky2;
-struct ITEM spiky3;
 
 // グローバル関数
 int APIENTRY WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPSTR lpCmdLine, _In_ int nCmdShow)
@@ -80,8 +98,8 @@ int APIENTRY WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 			DrawMapChip1(); // マップチップ
 			MovePlayer(); // プレイヤの操作
 			Gravity(); // 重力
+			Gimmick1(); // ギミック
 			Play();
-			Gimmick1();
 			break;
 
 		case PLAY2:
@@ -89,8 +107,8 @@ int APIENTRY WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 			DrawMapChip2(); // マップチップ
 			MovePlayer(); // プレイヤの操作
 			Gravity(); // 重力
+			Gimmick2(); // ギミック
 			Play();
-			Gimmick2();
 			break;
 
 		case CLEAR:
@@ -127,10 +145,16 @@ void InitGame(void)
 	imgPlayer[2] = LoadGraph("Sprites/Characters/jump1.png");
 	imgDie = LoadGraph("Sprites/Characters/die.png");
 	// マップチップ画像
-	chipImage = LoadGraph("Sprites/Tiles/mapChip.png");
+	imgChip = LoadGraph("Sprites/Tiles/mapChip.png");
 	// タイトル用地面画像
 	imgGra = LoadGraph("Sprites/Tiles/grass.png");
 	imgTer = LoadGraph("Sprites/Tiles/terrain.png");
+	// ギミック画像
+	imgKey = LoadGraph("Sprites/TIles/key.png"); // 鍵
+	imgDoor1 = LoadGraph("Sprites/Tiles/openDoor1.png"); // ドア上
+	imgDoor2 = LoadGraph("Sprites/Tiles/openDoor2.png"); // ドア下
+	imgFakeDoor1 = LoadGraph("Sprites/Tiles/fakeDoor1.png"); // 偽ドア上
+	imgFakeDoor2 = LoadGraph("Sprites/Tiles/fakeDoor2.png"); // 偽ドア下
 }
 
 // ゲーム開始時の初期値を代入する関数
@@ -148,8 +172,8 @@ void InitVariable(void)
 	player.sizeY = 128; // プレイヤのYサイズ
 	player.mag = 0.5f; // プレイヤの倍率
 	player.jumpState = true; // ジャンプできる状態か
-	// とげギミック
-	spiky1.x = 160; // 中心のx座標
+	// とげとげギミック
+	spiky1.x = 224; // 中心のx座標
 	spiky1.y = 560; // 中心のy座標
 	spiky1.wid = 64; // 幅
 	spiky1.hei = 32; // 高さ
@@ -161,17 +185,19 @@ void InitVariable(void)
 	spiky3.y = 176;
 	spiky3.wid = 64;
 	spiky3.hei = 32;
-
-	if (scene == PLAY1) // プレイヤの初期位置
-	{
-		player.x = 32.0f;
-		player.y = 32.0f;
-	}
-	else if (scene == PLAY2)
-	{
-		player.x;
-		player.y;
-	}
+	// 鍵とドア
+	key.x = 224;
+	key.y = 96;
+	key.wid = 64;
+	key.hei = 64;
+	keyDoor.x = 1184;
+	keyDoor.y = 64;
+	keyDoor.wid = 64;
+	keyDoor.hei = 128;
+	fakeDoor.x = 864;
+	fakeDoor.y = 64;
+	fakeDoor.wid = 64;
+	fakeDoor.hei = 128;
 }
 
 // 背景スクロール
@@ -249,7 +275,7 @@ void DrawMapChip1(void)
 			int sx = (id % chipRow) * step; // 縦列の指定
 			int sy = (id / chipRow) * step; // 横列の指定
 			// (描画するx座標,描画するy座標,切り取るx座標（左上）,切り取るy座標,描画する横サイズ,縦サイズ,描画するマップチップ画像,透過の有無)
-			DrawRectGraph(j * chipSize, i * chipSize, sx, sy, chipSize, chipSize, chipImage, true);
+			DrawRectGraph(j * chipSize, i * chipSize, sx, sy, chipSize, chipSize, imgChip, true);
 		}
 	}
 }
@@ -264,7 +290,7 @@ void DrawMapChip2(void)
 			int sx = (id % chipRow) * step; // 縦列の指定
 			int sy = (id / chipRow) * step; // 横列の指定
 			// (描画するx座標,描画するy座標,切り取るx座標（左上）,切り取るy座標,描画する横サイズ,縦サイズ,描画するマップチップ画像,透過の有無)
-			DrawRectGraph(j * chipSize, i * chipSize, sx, sy, chipSize, chipSize, chipImage, true);
+			DrawRectGraph(j * chipSize, i * chipSize, sx, sy, chipSize, chipSize, imgChip, true);
 		}
 	}
 }
@@ -272,6 +298,8 @@ void DrawMapChip2(void)
 // マップチップとプレイヤのX軸方向の当たり判定
 void CollisionX1(void)
 {
+	int playerCenterX = player.x; // プレイヤの中心X座標
+	int playerCenterY = player.y + 6;// プレイヤの中心Y座標
 	int hitSizeX = player.sizeX * 3 / 10 + 1; // 当たり判定の幅
 	int hitSizeY = player.sizeY * 3 / 8; // 当たり判定の高さ
 	for (int i = 0; i < mapHEIGHT; i++)
@@ -298,6 +326,8 @@ void CollisionX1(void)
 
 void CollisionX2(void)
 {
+	int playerCenterX = player.x; // プレイヤの中心X座標
+	int playerCenterY = player.y + 6;// プレイヤの中心Y座標
 	int hitSizeX = player.sizeX * 3 / 10 + 1; // 当たり判定の幅
 	int hitSizeY = player.sizeY * 3 / 8; // 当たり判定の高さ
 	for (int i = 0; i < mapHEIGHT; i++)
@@ -325,6 +355,8 @@ void CollisionX2(void)
 // マップチップとプレイヤのY軸方向の当たり判定
 void CollisionY1(void)
 {
+	int playerCenterX = player.x; // プレイヤの中心X座標
+	int playerCenterY = player.y + 6;// プレイヤの中心Y座標
 	int hitSizeX = player.sizeX * 3 / 10 + 1;// 当たり判定の幅
 	int hitSizeY = player.sizeY * 3 / 8; // 当たり判定の高さ
 	for (int i = 0; i < mapHEIGHT; i++)
@@ -355,6 +387,8 @@ void CollisionY1(void)
 
 void CollisionY2(void)
 {
+	int playerCenterX = player.x; // プレイヤの中心X座標
+	int playerCenterY = player.y + 6;// プレイヤの中心Y座標
 	int hitSizeX = player.sizeX * 3 / 10 + 1;// 当たり判定の幅
 	int hitSizeY = player.sizeY * 3 / 8; // 当たり判定の高さ
 	for (int i = 0; i < mapHEIGHT; i++)
@@ -371,7 +405,7 @@ void CollisionY2(void)
 			if (dx < (hitSizeX + chipSize) / 2 && dy < (hitSizeY + chipSize) / 2)
 			{
 				int y = (hitSizeY  + chipSize) / 2 - dy; // y方向に重なっている長さ
-				if (player.vy > 0) // 落下しているとき
+				if (player.vy > 0) // 落下しているとき 
 				{
 					player.y -= y;
 					player.jumpState = false; // ジャンプできない状態
@@ -386,12 +420,52 @@ void CollisionY2(void)
 // ギミック
 void Gimmick1(void)
 {
+	int playerCenterX = player.x; // プレイヤの中心X座標
+	int playerCenterY = player.y + 6;// プレイヤの中心Y座標
 	int playerW = 32;
 	int playerH = 48;
 	// とげとげ
-	if (abs(playerCenterX - spiky1.x) < (playerW + spiky1.wid) / 2)
+	if (abs(playerCenterX - (int)spiky1.x) < (playerW + spiky1.wid) / 2 && abs(playerCenterY - (int)spiky1.y) < (playerH + spiky1.hei) / 2)
 	{
 		scene = OVER;
+	}
+	if (abs(playerCenterX - (int)spiky2.x) < (playerW + spiky2.wid) / 2 && abs(playerCenterY - (int)spiky2.y) < (playerH + spiky2.hei) / 2)
+	{
+		scene = OVER;
+	}
+	if (abs(playerCenterX - (int)spiky3.x) < (playerW + spiky3.wid) / 2 && abs(playerCenterY - (int)spiky3.y) < (playerH + spiky3.hei) / 2)
+	{
+		scene = OVER;
+	}
+	// 鍵
+	bool keyState = false;
+	if (keyState == false)
+	{
+		DrawRotaGraph(key.x, key.y, 0.9, 2, imgKey, true);
+		if(abs(playerCenterX - (int)key.x) < (playerW + key.wid) / 2 && abs(playerCenterY - (int)key.y) < (playerH + key.hei) / 2)
+		{
+			keyState = true;
+		}
+	}
+	else 
+	{
+		DrawRotaGraph(1184, 736, 0.5, 2, imgKey, true);
+	}
+	// 鍵ドア
+	if (abs(playerCenterX - (int)keyDoor.x) < (playerW + keyDoor.wid) / 2 && abs(playerCenterY - (int)keyDoor.y) < (playerH + keyDoor.hei) / 2 && keyState == true)
+	{
+		DrawGraph(keyDoor.x - 32, keyDoor.y - 64, imgDoor1, true);
+		DrawGraph(keyDoor.x - 32, keyDoor.y, imgDoor2, true);
+		player.vx = 0;
+		player.vy = 0;
+		scene = PLAY2;
+		// if(timer == 10) { scene = PLAY2; }
+	}
+	// 偽ドア
+	if (abs(playerCenterX - (int)fakeDoor.x) < (playerW + fakeDoor.wid) / 2 && abs(playerCenterY - (int)fakeDoor.y) < (playerH + fakeDoor.hei) / 2 && keyState == true)
+	{
+		DrawGraph(fakeDoor.x - 32, fakeDoor.y - 64, imgFakeDoor1, true);
+		DrawGraph(fakeDoor.x - 32, fakeDoor.y, imgFakeDoor2, true);
 	}
 }
 
@@ -413,6 +487,8 @@ void Title(void)
 	if (CheckHitKey(KEY_INPUT_SPACE))
 	{
 		scene = PLAY1;
+		player.x = 32.0f;
+		player.y = 32.0f;
 	}
 	DrawGraph(WIDTH / 2 - 64, HEIGHT / 5 * 3 + 56, imgPlayer[(timer / 8) % 2], true); // プレイヤの表示
 	int timerGR = timer % chipSize;
@@ -424,7 +500,7 @@ void Title(void)
 }
 
 // PLAY画面
-void Play(void)
+void Play(void) // PLAY１でシーン遷移のとこにPLAY2のプレイヤの初期値入れる
 {
 	if (CheckHitKey(KEY_INPUT_A)) // 仮　シーン遷移
 	{
@@ -469,5 +545,5 @@ void Over(void)
 	SetFontSize(200);
 	DrawString(182, 180, "GAME OVER", 0xff0000);
 	DrawRotaGraph(WIDTH / 2, HEIGHT / 3 * 2, 1.3 , 0, imgDie, true);
-	if (timer == 90 ) { scene = TITLE; } // タイトルへシーン遷移
+	if (timer == 60 || CheckHitKey(KEY_INPUT_SPACE)) { scene = TITLE; } // タイトルへシーン遷移
 }
